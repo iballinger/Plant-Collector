@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h1>Plant Details</h1>
+
+<div class="card">
+    <div class="card-content">
+        <span class="card-title">{{ plant.name }}</span>
+        <p>Species: {{ plant.species }}</p>
+        <p>Description: {{ plant.description }}</p>
+        {% if plant.age > 0 %}
+            <p>Age: {{ plant.age }}</p>
+        {% else %}
+            <p>Age: Seedling</p>
+        {% endif %}
+    </div>
+    <div class="card-action">
+        <a href="{% url 'plants_update' plant.id %}">Edit</a>
+        <a href="{% url 'plants_delete' plant.id %}">Delete</a>
+    </div>
+    <div class="col s6">
+        <form action="{% url 'add_watering' plant.id %}" method="POST">
+            {% csrf_token %}
+            {{ watering_form.as_p }}
+            <input type="submit" class="btn" value="Add Watering">
+        </form>
+        <table class="striped">
+            <thead>
+                <tr><th>Date</th></tr>
+            </thead>
+            <tbody>
+                {% for watering in plant.watering_set.all %}
+                <tr>
+                    <td>{{watering.date}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<hr>
+<div class="row">
+    <div class="col s6">
+        <h3>{{ plant.name }}'s Caretakers</h3>
+        {% if plant.caretakers.count %}
+            {% for caretaker in plant.caretakers.all %}
+                <div class="card">
+                    <div class="card-content">
+                        <span class="card-title">
+                            {{ caretaker.name }}: {{ caretaker.description }}
+                        </span>
+                    </div>
+                    <div class="card-action">
+                        <form action="{ url 'unassoc_caretaker' plant.id caretaker.id %}" method="POST">
+                            {% csrf_token %}
+                            <button type="submit" class="btn">Remove</button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <h5>No Caretakers :(</h5>
+        {% endif %}
+    </div>
+    <div class="col s6">
+        <h3>Available Caretakers</h3>
+        {% if caretakers.count %}
+            {% for caretaker in caretakers.all %}
+                <div class="card">
+                    <div class="card-content">
+                        <span class="card-title">
+                            {{ caretaker.name }}: {{ caretaker.description }}
+                        </span>
+                    </div>
+                    <div class="card-action">
+                        <form action="{% url 'assoc-caretaker' plant.id caretaker.id %}" method="POST">
+                            {% csrf_token %}
+                            <button type="submit" class="btn">Add</button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <h5>{{plant.name}} already has all Caretakers available.</h5>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    const dateEl = document.getElementById('id_date');
+    M.Datepicker.init(dateEl, {
+        format: 'yyyy-mm-dd',
+        defaultDate: new Date(),
+        setDefaultDate: true,
+        autoClose: true
+    });
+</script>
+{% endblock %}
